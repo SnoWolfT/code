@@ -65,7 +65,6 @@ checkPodMetrics()
         CPUSUM) awk '{if (NR==FNR) {a[$1]=$1; a[$2]=$2;next} if ($2 in a) {print $0}}' OFS='\t' get_pod.txt top_pod.txt | awk '{sum+=$3} END {print "Total CPU consumption: "sum}';;
         MEMSUM) awk '{if (NR==FNR) {a[$1]=$1; a[$2]=$2;next} if ($2 in a) {print $0}}' OFS='\t' get_pod.txt top_pod.txt | awk '{sum+=$4} END {print "Total Memory consumption: "sum}';;
     esac
-
 }
 
 #-------------------------------------------------------------------------------
@@ -77,5 +76,3 @@ parseCommandLine $@
 checkNodeExisting
 
 checkPodMetrics
-
-
