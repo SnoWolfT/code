@@ -1,0 +1,14 @@
+let startTimestamp = ago(7d);
+KubePodInventory
+| where TimeGenerated > startTimestamp
+| project ContainerID, PodName=Name, Namespace, ContainerName
+| where PodName contains "Pod_Name" and Namespace contains "Namespace_Name" and ContainerName contains "Container_Name"
+| distinct ContainerID, PodName, ContainerName
+| join
+(
+    ContainerLog
+    | where TimeGenerated > startTimestamp
+)
+on ContainerID
+| project TimeGenerated, PodName, ContainerName, LogEntry, LogEntrySource
+| sort by TimeGenerated desc
