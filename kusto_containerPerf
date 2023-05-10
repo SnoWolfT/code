@@ -1,0 +1,20 @@
+let clusterName = "<clusterName>";
+let podName = "<podName>";
+let namespaceName = "<namespaceName>";
+let splictDeli = strcat(clusterName,"/");
+KubePodInventory
+| where ClusterId contains clusterName
+| where Name contains podName and Namespace contains namespaceName
+| extend container = tostring(split(ContainerName, "/")[1])
+| distinct Name, container, ContainerName
+| join
+(
+    Perf
+    | where ObjectName == "K8SContainer" and CounterName contains "cpuUsageNanoCores"
+    | extend ContainerName = tostring(split(InstanceName, splictDeli)[1])
+    | extend millicore = CounterValue/1000000
+)
+on ContainerName
+| summarize percentile(millicore, 95) by container, bin(TimeGenerated, 1m)
+| sort by TimeGenerated asc 
+//| render timechart 
