@@ -45,10 +45,17 @@ parseCommandLine()
 
 checkNodeExisting()
 {
+    script_path=$(readlink -f "$0")
+    script_dir=$(dirname "$script_path")
+
+        getPod=${script_dir}/get_pod.txt
+        topPod=${script_dir}/top_pod.txt
+
+
     nodeList=`kubectl get node -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}{end}'`
     if echo $nodeList | grep -w $nodeName &> /dev/null ; then
-    kubectl get pods -A -o jsonpath='{range .items[?(@.status.phase=="Running")]}{.metadata.name}{"\t"}{.spec.nodeName}{"\n"}{end}'| grep $nodeName > get_pod.txt
-    kubectl top pod -A | grep -v "MEMORY(bytes)" > top_pod.txt
+    kubectl get pods -A -o jsonpath='{range .items[?(@.status.phase=="Running")]}{.metadata.name}{"\t"}{.spec.nodeName}{"\n"}{end}'| grep $nodeName > ${getPod}
+    kubectl top pod -A | grep -v "MEMORY(bytes)" > ${topPod}
     echo "===== $nodeName exists. Collect pods' metrics."
     else
     echo "ERROR: $nodeName doesn't exist. Please double check. Here is the node list."
@@ -60,10 +67,10 @@ checkNodeExisting()
 checkPodMetrics()
 {
     case $FLAG in
-        CPUSORT) awk '{if (NR==FNR) {a[$1]=$1; a[$2]=$2;next} if ($2 in a) {print $0}}' OFS='\t' get_pod.txt top_pod.txt | sort -n -k 3;;
-        MEMSORT) awk '{if (NR==FNR) {a[$1]=$1; a[$2]=$2;next} if ($2 in a) {print $0}}' OFS='\t' get_pod.txt top_pod.txt | sort -n -k 4;;
-        CPUSUM) awk '{if (NR==FNR) {a[$1]=$1; a[$2]=$2;next} if ($2 in a) {print $0}}' OFS='\t' get_pod.txt top_pod.txt | awk '{sum+=$3} END {print "Total CPU consumption: "sum}';;
-        MEMSUM) awk '{if (NR==FNR) {a[$1]=$1; a[$2]=$2;next} if ($2 in a) {print $0}}' OFS='\t' get_pod.txt top_pod.txt | awk '{sum+=$4} END {print "Total Memory consumption: "sum}';;
+        CPUSORT) awk '{if (NR==FNR) {a[$1]=$1; a[$2]=$2;next} if ($2 in a) {print $0}}' OFS='\t' ${getPod} ${topPod} | sort -n -k 3;;
+        MEMSORT) awk '{if (NR==FNR) {a[$1]=$1; a[$2]=$2;next} if ($2 in a) {print $0}}' OFS='\t' ${getPod} ${topPod} | sort -n -k 4;;
+        CPUSUM) awk '{if (NR==FNR) {a[$1]=$1; a[$2]=$2;next} if ($2 in a) {print $0}}' OFS='\t' ${getPod} ${topPod} | awk '{sum+=$3} END {print "Total CPU consumption: "sum}';;
+        MEMSUM) awk '{if (NR==FNR) {a[$1]=$1; a[$2]=$2;next} if ($2 in a) {print $0}}' OFS='\t' ${getPod} ${topPod} | awk '{sum+=$4} END {print "Total Memory consumption: "sum}';;
     esac
 }
 
