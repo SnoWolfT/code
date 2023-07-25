@@ -48,9 +48,8 @@ checkNodeExisting()
     script_path=$(readlink -f "$0")
     script_dir=$(dirname "$script_path")
 
-        getPod=${script_dir}/get_pod.txt
-        topPod=${script_dir}/top_pod.txt
-
+    getPod=${script_dir}/get_pod.txt
+    topPod=${script_dir}/top_pod.txt
 
     nodeList=`kubectl get node -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}{end}'`
     if echo $nodeList | grep -w $nodeName &> /dev/null ; then
