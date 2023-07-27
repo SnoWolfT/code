@@ -14,6 +14,10 @@ spec:
       labels:
         app: dnsloadtest
     spec:
+      dnsConfig:
+        options:
+          - name: retries
+            value: "5"
       containers:
       - name: dnsloadtest
         image: nginx
@@ -24,9 +28,10 @@ spec:
           apt update &>/dev/null
           apt install -y dnsutils &>/dev/null
           apt install -y wget &>/dev/null
+          apt install -y net-tools &>/dev/null
           wget https://raw.githubusercontent.com/SnoWolfT/code/main/dnsLoadTest.sh &>/dev/null
           chmod +x dnsLoadTest.sh
-          for i in {1..299} 
+          for i in {1..999} 
           do 
           ./dnsLoadTest.sh www.bing.com & 
           done
