@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dnsloadtest
+  labels:
+    app: dnsloadtest
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: dnsloadtest
+  template:
+    metadata:
+      labels:
+        app: dnsloadtest
+    spec:
+      containers:
+      - name: dnsloadtest
+        image: nginx
+        command:
+        - bash
+        - -c
+        - |
+          apt update &>/dev/null
+          apt install -y dnsutils &>/dev/null
+          apt install -y wget &>/dev/null
+          wget https://raw.githubusercontent.com/SnoWolfT/code/main/dnsLoadTest.sh &>/dev/null
+          chmod +x dnsLoadTest.sh
+          for i in {1..299} 
+          do 
+          ./dnsLoadTest.sh www.bing.com & 
+          done
+          ./dnsLoadTest.sh www.bing.com
