@@ -1,9 +1,11 @@
 #!/bin/bash
 #-----------------------------------------------------------------------------------
-# podMetricsInNode.sh 
+# podMetricsInNode.sh
 #
 # Author: Tom Zhu
-# Version: 1.0
+# Version: 1.1
+#
+# 2023/07/28 - Add the info of Node and the NonPod (Node - Pod) under MEMSUM (-M).
 #-----------------------------------------------------------------------------------
 
 usage()
@@ -19,14 +21,14 @@ parseCommandLine()
 {
   argv=`getopt cmCMh: ${*-} 2> /dev/null`
   if [ $? -ne 0 ]; then
-    printf "ERROR: Invalid option(s).\n" 
+    printf "ERROR: Invalid option(s).\n"
     usage
     exit 1
   fi
 
   nodeName=$2
   if [ -z "$nodeName" ]; then
-    printf "ERROR: No Node specified\n" 
+    printf "ERROR: No Node specified\n"
     usage; exit 1
   fi
 
@@ -36,7 +38,7 @@ parseCommandLine()
       -c) FLAG="CPUSORT"; break ;;
       -m) FLAG="MEMSORT"; break ;;
       -C) FLAG="CPUSUM"; break  ;;
-      -M) FLAG="MEMSUM"; break  ;;      
+      -M) FLAG="MEMSUM"; break  ;;
       -h) usage       ;;
       *) usage        ;;
     esac
@@ -69,9 +71,21 @@ checkPodMetrics()
         CPUSORT) awk '{if (NR==FNR) {a[$1]=$1; a[$2]=$2;next} if ($2 in a) {print $0}}' OFS='\t' ${getPod} ${topPod} | sort -n -k 3;;
         MEMSORT) awk '{if (NR==FNR) {a[$1]=$1; a[$2]=$2;next} if ($2 in a) {print $0}}' OFS='\t' ${getPod} ${topPod} | sort -n -k 4;;
         CPUSUM) awk '{if (NR==FNR) {a[$1]=$1; a[$2]=$2;next} if ($2 in a) {print $0}}' OFS='\t' ${getPod} ${topPod} | awk '{sum+=$3} END {print "Total CPU consumption: "sum}';;
-        MEMSUM) awk '{if (NR==FNR) {a[$1]=$1; a[$2]=$2;next} if ($2 in a) {print $0}}' OFS='\t' ${getPod} ${topPod} | awk '{sum+=$4} END {print "Total Memory consumption: "sum}';;
+        MEMSUM) memAnalyze;;
     esac
 }
+
+memAnalyze()
+{
+    podMem=`awk '{if (NR==FNR) {a[$1]=$1; a[$2]=$2;next} if ($2 in a) {print $0}}' OFS='\t' ${getPod} ${topPod} | awk '{sum+=$4} END {print sum}'`
+    nodeMem=`kubectl top node | grep $nodeName | awk '{sum+=$4} END {print sum}'`
+    nonPodMem=`echo $podMem $nodeMem | awk '{ print $2-$1}'`
+
+    echo "Pod Memory consumption:" $podMem "Mi"
+    echo "Node Memory consumption:" $nodeMem "Mi"
+    echo "NonPod Memory consumption:" $nonPodMem "Mi"
+}
+
 
 #-------------------------------------------------------------------------------
 # MAIN
