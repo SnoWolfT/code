@@ -1,6 +1,6 @@
-You can choose to replace the node name in the yaml file, debugPod_Manual.yaml.
+You can choose to replace the node name in the yaml file, ```debugPod_Manual.yaml```.
 
-Alternatively, you can use the script and add the node name as the parameter. Here is one example.
+Alternatively, you can use the script, ```accessNode.sh```, and add the node name as the parameter. Here is one example.
 
 tom [ ~ ]$ k get node
 NAME                              STATUS   ROLES   AGE     VERSION
