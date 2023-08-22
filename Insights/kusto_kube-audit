@@ -8,11 +8,13 @@ AzureDiagnostics
 | extend requestObject = parse_json(log_j.requestObject)
 | extend object = requestObject.metadata.name
 | extend sourceIP = log_j.sourceIPs
+| extend userAgent = log_j.userAgent // userAgent is helpful to filter whether the request is from cx, like kubectl. 
 | extend objectkind = log_j.objectRef.resource
 | extend namespace = log_j.objectRef.namespace
 | extend subcommand = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(log_j.responseObject)).metadata)).managedFields))[0].manager)
 | extend annotations = log_j.annotations
-| where verb !in ("get", "list", "watch", "") and verb !contains "patch"
-| where log_j contains "nginx" //and verb contains "delete"
-| project requestTime, username, sourceIP, verb, namespace, object, objectkind, subcommand, requestURI, annotations, requestObject, log_j
+| where verb !in ("get", "list", "watch", "") // and verb !contains "patch" // "patch" is helpful to track the update operations. 
+| where userAgent contains "kubectl" and username !contains "aksService" //and verb contains "delete"
+//| extend containerImage = requestObject.spec.template.spec.containers[0].image | extend containerName = requestObject.spec.template.spec.containers[0].name // This is used to track the image change. It needs to specific the container's index in the current version.
+| project requestTime, username, sourceIP, verb, namespace, object, objectkind, subcommand, requestURI, annotations, requestObject, log_j//, containerImage, containerName
 | sort by requestTime desc
