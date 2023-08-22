@@ -1,7 +1,7 @@
 You can choose to replace the node name in the yaml file, **debugPod_Manual.yaml**.
 
 Alternatively, you can use the script, **accessNode.sh**, and add the node name as the parameter. Here is one example.
-
+```
 tom [ ~ ]$ k get node
 NAME                              STATUS   ROLES   AGE     VERSION
 aks-migtest-14958771-vmss00001k   Ready    agent   4h27m   v1.25.11
@@ -13,3 +13,4 @@ debugger-aks-migtest-14958771-vmss00001m   1/1     Running     0          7s    
 root@aks-migtest-14958771-vmss00001M:/# chroot host
 # bash
 root@aks-migtest-14958771-vmss00001M:/# 
+```
