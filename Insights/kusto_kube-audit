@@ -1,0 +1,18 @@
+AzureDiagnostics
+| where Category == "kube-audit-admin"
+| extend log_j=parse_json(log_s) 
+| extend requestTime = tostring(log_j.requestReceivedTimestamp)
+| extend requestURI = log_j.requestURI
+| extend verb = log_j.verb
+| extend username = log_j.user.username
+| extend requestObject = parse_json(log_j.requestObject)
+| extend object = requestObject.metadata.name
+| extend sourceIP = log_j.sourceIPs
+| extend objectkind = log_j.objectRef.resource
+| extend namespace = log_j.objectRef.namespace
+| extend subcommand = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(log_j.responseObject)).metadata)).managedFields))[0].manager)
+| extend annotations = log_j.annotations
+| where verb !in ("get", "list", "watch", "") and verb !contains "patch"
+| where log_j contains "nginx" //and verb contains "delete"
+| project requestTime, username, sourceIP, verb, namespace, object, objectkind, subcommand, requestURI, annotations, requestObject, log_j
+| sort by requestTime desc
