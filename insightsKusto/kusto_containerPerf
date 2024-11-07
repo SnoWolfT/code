@@ -1,3 +1,4 @@
+// CPU
 let clusterName = "<clusterName>";
 let podName = "<podName>";
 let namespaceName = "<namespaceName>";
@@ -16,5 +17,28 @@ KubePodInventory
 )
 on ContainerName
 | summarize percentile(millicore, 95) by container, bin(TimeGenerated, 1m)
+| sort by TimeGenerated asc 
+//| render timechart 
+
+// Memory
+let clusterName = "<clusterName>";
+let podName = "<podName>";
+let containerName = "<containerName>";
+let namespaceName = "<namespaceName>";
+let splictDeli = strcat(clusterName,"/");
+KubePodInventory
+| where ClusterId contains clusterName
+| extend container = tostring(split(ContainerName, "/")[1])
+| where Name contains podName and Namespace contains namespaceName and container == containerName
+| distinct Name, container, ContainerName
+| join
+(
+    Perf
+    | where ObjectName == "K8SContainer" and CounterName contains "memoryWorkingSetBytes"
+    | extend ContainerName = tostring(split(InstanceName, splictDeli)[1])
+    | extend memInGB = CounterValue/1024/1024/1024
+)
+on ContainerName
+| summarize percentile(memInGB, 100) by container, bin(TimeGenerated, 1m)
 | sort by TimeGenerated asc 
 //| render timechart 
