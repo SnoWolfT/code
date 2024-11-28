@@ -1,11 +1,12 @@
 // CPU
 let clusterName = "<clusterName>";
 let podName = "<podName>";
+let containerName = "<containerName>";
 let namespaceName = "<namespaceName>";
 let splictDeli = strcat(clusterName,"/");
 KubePodInventory
 | where ClusterId contains clusterName
-| where Name contains podName and Namespace contains namespaceName
+| where Name contains podName and Namespace contains namespaceName and container == containerName
 | extend container = tostring(split(ContainerName, "/")[1])
 | distinct Name, container, ContainerName
 | join
