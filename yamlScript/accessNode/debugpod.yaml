@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: debugger-destinationNode
+  name: debugger-aks-agentpool-18097993-vmss00000c
 spec:
   containers:
   - name: debugger
-    image: mcr.microsoft.com/cbl-mariner/busybox:2.0
+    image: mcr.microsoft.com/dotnet/runtime-deps:6.0
     stdin: true
     securityContext:
       privileged: true
@@ -19,4 +19,4 @@ spec:
   hostNetwork: true
   hostPID: true
   restartPolicy: Always
-  nodeName: destinationNode
+  nodeName: aks-agentpool-18097993-vmss00000c
